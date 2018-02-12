@@ -18,7 +18,8 @@ var debugOn = false;
 		callbackParameter : 'callback',
 		callback : 'lodlive',
 		pageCache : true,
-		timeout : 30000
+		timeout : 30000,
+		accepts:"application/json"
 	});
 	var globalInfoPanelMap = {};
 	var globalInnerPageMap = {};
@@ -135,6 +136,7 @@ var debugOn = false;
 			var guessedEndpoint = base + "sparql?" + $.jStorage.get('endpoints')['all'] + "&query=" + encodeURIComponent("select * where {?a ?b ?c} LIMIT 1");
 			$.jsonp({
 				url : guessedEndpoint,
+				accepts:"application/json",
 				success : function(data) {
 					if (data && data.results && data.results.bindings[0]) {
 						var connections = lodLiveProfile.connection;
@@ -2695,13 +2697,21 @@ var debugOn = false;
 					methods.parseRawResource(destBox, anUri, fromInverse);
 				});
 			} else {
+				destBox.children('.box').html('<img style=\"margin-top:' + (destBox.children('.box').height() / 2 - 8) + 'px\" src="img/ajax-loader.gif"/>');
 
-				$.jsonp({
-					url : SPARQLquery,
+				fetch(SPARQLquery, {
+					credentials: "omit",
+					headers : {
+						"Accept": "application/sparql-results+json"
+					}/*,
 					beforeSend : function() {
 						destBox.children('.box').html('<img style=\"margin-top:' + (destBox.children('.box').height() / 2 - 8) + 'px\" src="img/ajax-loader.gif"/>');
 					},
-					success : function(json) {
+					error : function(e, b, v) {
+						methods.errorBox(destBox);
+					}*/
+				}).then( function(response) {
+					response.json().then(function(json) {
 						json = json['results']['bindings'];
 						// var tot = json.length;
 						var conta = 0;
@@ -2739,13 +2749,14 @@ var debugOn = false;
 							SPARQLquery = methods.composeQuery(anUri, 'inverse');
 
 							var inverses = [];
-							$.jsonp({
-								url : SPARQLquery,
-								beforeSend : function() {
-									destBox.children('.box').html('<img style=\"margin-top:' + (destBox.children('.box').height() / 2 - 5) + 'px\" src="img/ajax-loader.gif"/>');
-
-								},
-								success : function(json) {
+							destBox.children('.box').html('<img style=\"margin-top:' + (destBox.children('.box').height() / 2 - 5) + 'px\" src="img/ajax-loader.gif"/>');
+							fetch(SPARQLquery, {
+								credentials: "omit",
+								headers : {
+									"Accept": "application/sparql-results+json"
+								}
+							}).then(function(response) {
+								response.json().then(function(json) {
 									json = json['results']['bindings'];
 									var conta = 0;
 									// var tot = json.length;
@@ -2791,9 +2802,8 @@ var debugOn = false;
 									} else {
 										callback();
 									}
-
-								},
-								error : function(e, b, v) {
+								});
+							}).catch(function(e, b, v) {
 									destBox.children('.box').html('');
 									methods.format(destBox.children('.box'), values, uris);
 									if ($.jStorage.get('showInfoConsole')) {
@@ -2812,8 +2822,7 @@ var debugOn = false;
 									if ($.jStorage.get('doAutoExpand')) {
 										methods.autoExpand(destBox);
 									}
-								}
-							});
+								});
 						} else {
 							methods.format(destBox.children('.box'), values, uris);
 							methods.addClick(destBox, fromInverse ? function() {
@@ -2826,10 +2835,7 @@ var debugOn = false;
 								methods.autoExpand(destBox);
 							}
 						}
-					},
-					error : function(e, b, v) {
-						methods.errorBox(destBox);
-					}
+					});
 				});
 
 			}

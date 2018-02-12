@@ -553,6 +553,7 @@ $(function() {
 		if (type == 'dbpedia') {
 			connection = $.ajax({
 				url : 'http://lookup.dbpedia.org/api/search.asmx/PrefixSearch?QueryClass=&MaxHits=20&QueryString=' + value,
+				accepts:"application/json",
 				async : true,
 				success : function(data) {
 					var xml = $(data);

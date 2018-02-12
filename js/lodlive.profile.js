@@ -5,6 +5,29 @@ $.jStorage
                     // parametri di connessione agli endpoint
                     'connection' : {
                         // base degli about dei documenti non dell'ontologia
+                        'http://classifications.data.admin.ch/' : {
+                            description : {
+                               en : 'classifications on data.admin.ch'
+                            },
+                            useForInverseSameAs : false,
+                            sparql : {
+                                allClasses : 'SELECT DISTINCT ?object  WHERE {[] a ?object} ORDER BY ?object  LIMIT 50  ',
+                                findSubject : 'SELECT DISTINCT ?subject WHERE { {?subject a <{CLASS}>;<http://purl.org/dc/elements/1.1/title> ?object. FILTER(regex(str(?object),\'{VALUE}\',\'i\'))} UNION {?subject a <{CLASS}>;<http://www.w3.org/2000/01/rdf-schema#label> ?object. FILTER(regex(str(?object),\'{VALUE}\',\'i\'))} UNION {?subject a <{CLASS}>;<http://www.w3.org/2004/02/skos/core#prefLabel> ?object. FILTER(regex(str(?object),\'{VALUE}\',\'i\'))} } LIMIT 1',
+                                documentUri : 'SELECT DISTINCT * WHERE {<{URI}> ?property ?object.FILTER ((( isIRI(?object) && ?property != <http://xmlns.com/foaf/0.1/depiction> )|| ?property = <http://www.w3.org/2000/01/rdf-schema#label>  || ?property = <http://www.georss.org/georss/point> || ?property = <http://xmlns.com/foaf/0.1/surname> || ?property = <http://xmlns.com/foaf/0.1/name> || ?property = <http://purl.org/dc/elements/1.1/title>))}  ORDER BY ?property',
+                                document : 'SELECT DISTINCT *  WHERE  {{<{URI}> ?property ?object. FILTER(!isLiteral(?object))} UNION 	 {<{URI}> ?property 	 ?object.FILTER(isLiteral(?object)).FILTER(lang(?object) ="fr")} UNION 	 {<{URI}> ?property 	 ?object.FILTER(isLiteral(?object)).FILTER(lang(?object) ="en")} UNION 	 {<{URI}> ?property 	 ?object.FILTER(isLiteral(?object)).FILTER(lang(?object) ="it")}}  ORDER BY ?property',
+                                bnode : 'SELECT DISTINCT *  WHERE {<{URI}> ?property ?object}',
+                                inverse : 'SELECT DISTINCT * WHERE {?object ?property <{URI}>} LIMIT 100',
+                                inverseSameAs : 'SELECT DISTINCT * WHERE {?object <http://www.w3.org/2002/07/owl#sameAs> <{URI}>}'
+                            },
+                            endpoint : 'https://lindas-data.ch/sparql',
+                            examples : [ {
+                                uri : 'http://taxon-concept.plazi.org/id/Animalia/Sadayoshia_edwardsii_Miers_1884',
+                                label : 'Sadayoshia Edwarsii (Plazi data)'
+                            }, {
+                                uri : 'http://classifications.data.admin.ch/municipality/1024',
+                                label : 'Emmen (Political Municipality)'
+                            } ]
+                        },
                         'http://fr.dbpedia.org' : {
                             description : {
                                 fr : 'DBpédia en français est le chapitre francophone de DBpedia, il s\'inscrit dans l\'effort d\'internationalisation de DBpedia dont le but est de maintenir des données structurées extraites de différents chapitres de Wikipedia.',
